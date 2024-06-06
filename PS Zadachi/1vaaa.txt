@@ -1,0 +1,416 @@
+#include <stdio.h>
+#include <string.h>
+
+
+int total_integer_count = 0,
+unsigned_integer_count = 0,
+long_integer_count = 0,
+long_long_int_count = 0,
+hex_count = 0,
+oct_count =0,
+float_count = 0,
+double_count = 0,
+long_double_count = 0;
+
+
+int CheckHex(const char word[25])
+{
+    if(word [0] == '0' && word[1] == 'x')
+    {
+        return 1;
+    }
+    else if(word [0] == '+' && word [1] == '0' && word[2] == 'x')
+    {
+        return 1;
+    }
+
+    return 0;
+}
+int CheckInt(const char word[25])
+{
+    if(strstr(word, "l"))
+    {
+        return 1;
+    }
+    else if(strstr(word, "L"))
+    {
+        return 1;
+    }
+    else if(strstr(word, "U"))
+    {
+        return 1;
+    }
+    else if (strstr(word, "u"))
+    {
+        return 1;
+    }
+    return 0;
+}
+int CheckOct(const char word[25])
+{
+    if(word [0] == '0' && word[1] != 'x' && word[1] != '.' && word[1] != ',')
+    {
+        return 1;
+    }
+    return 0;
+}
+int CheckDec(const char word[25])
+{
+    if(strstr(word,"."))
+    {
+        return 1;
+    }
+    else if(strstr(word,","))
+    {
+        return 1;
+    }
+    else if (strstr(word,"e"))
+    {
+        return 1;
+    }
+    else if (strstr(word,"E"))
+    {
+        return 1;
+    }
+    return 0;
+}
+
+void FindHex(const char word[25])
+{
+    int i = 2;
+    if(word[0] == '+')
+    {
+        i++;
+    }
+    int error = 0;
+    char hexChars[] = "0123456789ABCDEFabcdef";
+    for(; i <= strlen(word); i++)
+    {
+        if(!strchr(hexChars, word[i]))
+        {
+            error = 1;
+            break;
+        }
+    }
+    if(error)
+    {
+        printf("%s - error\n", word);
+    }
+    else
+    {
+        printf("%s - hex\n", word);
+        hex_count++;
+    }
+}
+void FindOcts(const char word[25])
+{
+    int error = 0;
+    char octsChars[] = "012345678";
+    for(int i = 2; i <= strlen(word)-1; i++)
+    {
+        if(!strchr(octsChars, word[i]))
+        {
+            error = 1;
+            break;
+        }
+    }
+    if(strlen(word)<3 && word[0]== '0' && word[1] == '0')
+    {
+        error = 1;
+    }
+    if(error)
+    {
+        printf("%s - error\n", word);
+    }
+    else
+    {
+        printf("%s - oct\n", word);
+        oct_count++;
+    }
+}
+void FindDecs(const char word[25])
+{
+    char allowedCharsDec[] = ",.0123456789";
+    int error = 0;
+    int isexp = 0;
+    int isfloat = 0;
+    int islongdbl = 0;
+    int floatpoint = 0;
+    int isend = 0;
+    int i;
+    if (word[0] ==  '+' || word[0] == '-')
+    {
+        i =1;
+    }
+    else
+    {
+        i = 0;
+    }
+    for(; i <= strlen(word)-1; i++)
+    {
+        if(!strchr(allowedCharsDec, word[i]))
+        {
+            if(word[i] == 'f' || word[i] == 'F' || word[i] == 'l' || word[i] == 'L')
+            {
+                if(isend){
+                    error = 1;
+                    break;
+                }
+                else
+                {
+                    isend = 1;
+                    if(word[i] == 'f' || word[i] == 'F')
+                    {
+                        isfloat = 1;
+                    }
+                    else
+                    {
+                        islongdbl = 1;
+                    }
+                }
+            }
+            else if(word[i] == 'E'|| word[i] == 'e')
+            {
+                if(isexp)
+                {
+                    error = 1;
+                    break;
+                }
+                else
+                {
+                    isexp = 1;
+                }
+            }
+            else if(word[i] == '+' || word[i] == '-')
+            {
+                if (word[i-1] == 'E' || word[i-1] == 'e')
+                {
+                    isexp = 1;
+                }
+                else
+                {
+                    error = 1;
+                    break;
+                }
+            }
+            else
+            {
+                error = 1;
+                break;
+            }
+        }
+        else if(word[i] == '.' || word[i] == ',')
+        {
+            if(floatpoint)
+            {
+                error = 1;
+                break;
+            }
+            else
+            {
+                floatpoint = 1;
+            }
+        }
+    }
+    if(error)
+    {
+        printf("%s - error\n", word);
+    }
+    else
+    {
+        printf("%s - real - ", word);
+        if (islongdbl)
+        {
+            printf("long double\n");
+            long_double_count++;
+        }
+        else if (isfloat)
+        {
+            printf("float\n");
+            float_count++;
+        }
+        else
+        {
+            printf("double\n");
+            double_count++;
+        }
+    }
+
+}
+void FindInts(const char word[25])
+{
+    char allowedChars[] = "0123456789";
+    int error = 0;
+    int islong = 0;
+    int islonglong = 0;
+    int isunsigned = 0;
+    int canbeunsigned = 1;
+    if (word[0] == '-')
+    {
+        canbeunsigned = 0;
+    }
+    int i = canbeunsigned == 0 ? 1 : 0;
+    if(word[0] == '+')
+    {
+        i++;
+    }
+    for(;i <= strlen(word)-1; i++)
+    {
+        if(islong || isunsigned){
+            if(strchr(allowedChars, word[i]))
+            {
+                error = 1;
+                break;
+            }
+        }
+        if(!strchr(allowedChars, word[i]))
+        {
+            if(word[i] == 'l'|| word[i] == 'u' || word[i] == 'L' || word[i] == 'U'){
+                if(word[i] == 'u' || word[i] == 'U'){
+                    if(isunsigned)
+                    {
+                        error = 1;
+                        break;
+                    }
+                    else
+                    {
+                        if(canbeunsigned)
+                        {
+                            isunsigned = 1;
+                        }
+                        else
+                        {
+                            error = 1; break;
+                        }
+                    }
+                }
+                else if (word[i] == 'L' || word[i] == 'l')
+                {
+                    if(islong)
+                    {
+                        islonglong = 1;
+                    }
+                    else
+                    {
+                        islong = 1;
+                    }
+                }
+            }
+            else
+            {
+                error = 1;
+                break;
+            }
+        }
+    }
+
+    if(error)
+    {
+        printf("%s - error\n", word);
+    }
+    else
+    {
+        printf("%s - int", word);
+        total_integer_count++;
+        if(isunsigned)
+        {
+            printf("- unsigned");
+            unsigned_integer_count++;
+        }
+        if(islonglong)
+        {
+            printf(" longlong");
+            long_long_int_count++;
+        }
+        else if (islong)
+        {
+            printf(" long");
+            long_integer_count++;
+        }
+        printf(" \n");
+    }
+}
+
+int checkType(const char word[25]) {
+    int isHex = CheckHex(word),
+            isOct = CheckOct(word),
+            isDec = CheckDec(word),
+            isInt = CheckInt(word);
+
+    if(isInt)
+    {
+        return 1;
+    }
+    else if(isHex)
+    {
+        return 3;
+    }
+    else if(isOct)
+    {
+        return 2;
+    }
+    else if(isDec)
+    {
+        return 4;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+int main() 
+{
+
+
+    FILE *fp;
+    char word[25];
+
+    fp = fopen("C:\\Users\\dimit\\Desktop\\untitled\\numbers.txt", "r");
+
+    if (fp == NULL) 
+    {
+        printf("Could not open file\n");
+        return 1;
+    }
+    
+    while (fscanf(fp, "%s", word) == 1)
+    {
+        int wordType = checkType(word);
+
+        switch (wordType)
+        {
+            case 1:
+                FindInts(word);
+                break;
+            case 2:
+                FindOcts(word);
+                break;
+            case 3:
+                FindHex(word);
+                break;
+            case 4:
+                FindDecs(word);
+                break;
+            default:
+                break;
+        }
+    }
+
+    fclose(fp);
+
+
+    printf("Total count of integers = %d\n", total_integer_count);
+    printf("--Unsigned integers = %d\n", unsigned_integer_count);
+    printf("--Long integers = %d\n", long_integer_count);
+    printf("--Long long integer = %d\n", long_long_int_count);
+    printf("Total count of decimal numbers = %d\n", float_count+double_count+long_double_count);
+    printf("--Floats count = %d\n", float_count);
+    printf("--Double count = %d\n", double_count);
+    printf("--Long double count = %d\n", long_double_count);
+    printf("Oct count = %d\n", oct_count);
+    printf("Hex count = %d\n", hex_count);
+
+    return 0;
+}
+

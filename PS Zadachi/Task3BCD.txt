@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int checkNegative(int n, int negative){
+    if (n < 0) {
+        negative = 1;
+    }
+    return negative;
+}
+
+void ToBinary(int count, int bcd){
+    for (int i = count - 1; i >= 0; --i) {
+        int nibb = (bcd >> (4 * i)) & 0xF;
+        printf("%d%d%d%d ", (nibb & 8) >> 3, (nibb & 4) >> 2, (nibb & 2) >> 1, nibb & 1);
+    }
+}
+
+void ConvertToBCD(int n) {
+    if (n == 0) {
+        printf("0000");
+        return;
+    }
+    int negative = 0;
+    int count = 0;
+    int bcd = 0;
+
+
+    negative = checkNegative(n, negative);
+    n = abs(n);
+
+    while (n > 0) {
+        int digit = n % 10;
+        bcd = (bcd << 4) | digit;
+        n /= 10;
+        count++;
+    }
+    if (negative) {
+        printf("1001 ");
+    }
+    ToBinary(count, bcd);
+}
+
+int BCDAddition(int a, int b) {
+    int sum = a + b;
+    printf("\nBCD Sum: ");
+    ConvertToBCD(sum);
+    return 0;
+}
+
+int main() {
+    int a, b;
+
+    printf("first number: ");
+    scanf("%d", &a);
+
+    printf("second number: ");
+    scanf("%d", &b);
+
+    BCDAddition(a, b);
+
+    return 0;
+}
